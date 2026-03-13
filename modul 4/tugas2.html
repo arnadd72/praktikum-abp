@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Profil - Arnanda</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+        rel="stylesheet">
+
+  <style>
+    body {
+      background-image: url('cilacap.jpg'); 
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-color: hsl(200, 40%, 90%); 
+    }
+
+    .profile-card {
+      background-color: rgba(255, 255, 255, 0.90); 
+      backdrop-filter: blur(10px); 
+      border-radius: 15px;
+      padding: 40px;
+      margin-top: 60px;
+      margin-bottom: 60px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-custom {
+      background-color: tomato;
+      color: white;
+      font-weight: bold;
+      border: 2px solid tomato;
+      transition: all 0.3s ease-in-out;
+      border-radius: 8px;
+    }
+
+    .btn-custom:hover {
+      background-color: transparent;
+      color: tomato;
+    }
+
+    .mark-text {
+      background-color: tomato;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-style: italic;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      
+      <div class="col-md-8 profile-card text-center">
+        
+        <h2 class="mb-4 fw-bold text-uppercase">Profil Individu</h2>
+        
+        <img src="https://ui-avatars.com/api/?name=Arnanda+Setya+Nosa+Putra&background=tomato&color=fff&size=130" 
+             alt="Foto Profil" 
+             class="rounded-circle mb-3 border border-4 border-white shadow-sm">
+        
+        <h3 class="fw-bold"><span class="mark-text">Arnanda Setya Nosa Putra</span></h3>
+        <p class="text-muted mb-4 px-md-5">
+          Saya Mahasiswa S1 Informatika di Telkom University Purwokerto. Memiliki ketertarikan kuat 
+          dalam membangun solusi digital yang aman dan arsitektur sistem yang solid.
+        </p>
+
+        <button id="btnToggleProfile" class="btn btn-custom px-4 py-2 mt-2 shadow-sm">
+          Lihat Profil Lengkap
+        </button>
+        
+        <div id="detailSection" class="d-none mt-5 fade-in text-start">
+          
+          <h5 class="fw-bold mb-3 border-bottom pb-2 border-danger">
+            Informasi Personal & Teknis
+          </h5>
+          
+          <table class="table table-hover bg-white shadow-sm rounded">
+            <tbody>
+              <tr>
+                <th width="35%" class="text-secondary">Asal Kota</th>
+                <td class="fw-medium">Cilacap, Jawa Tengah</td>
+              </tr>
+              <tr>
+                <th class="text-secondary">Fokus Pengembangan</th>
+                <td>
+                  <strong>Web Dev:</strong> Laravel, Next.js, Node.js, React.js, Mysql <br>
+                  <strong>Mobile Dev:</strong> Flutter & Firebase <br>
+                </td>
+              </tr>
+              <tr>
+                <th class="text-secondary">Hobi & Aktivitas</th>
+                <td>Bersepeda</td>
+              </tr>
+              <tr>
+                <th class="text-secondary">Projek Unggulan</th>
+                <td>
+                  <ul class="list-unstyled mb-0">
+                    <li class="mb-1">
+                      <strong>Chupatu Mobile:</strong> Aplikasi layanan cuci 
+                      sepatu (Flutter).
+                    </li>
+                    <li class="mb-1">
+                      <strong>Jejak Purba:</strong> Platform museum digital 
+                      prasejarah.
+                    </li>
+                    <li>
+                      <strong>KN Fitness:</strong> Website pusat kebugaran.
+                    </li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <th class="text-secondary">Sertifikasi</th>
+                <td>AWS Academy Graduate - Cloud Foundations</td>
+              </tr>
+            </tbody>
+          </table>
+          
+        </div> 
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
+  
+  <script>
+    'use strict';
+
+    const btnToggle = document.getElementById('btnToggleProfile');
+    const detailSection = document.getElementById('detailSection');
+
+    btnToggle.addEventListener('click', function() {
+      const isHidden = detailSection.classList.contains('d-none');
+
+      if (isHidden) {
+        detailSection.classList.remove('d-none');
+        btnToggle.textContent = 'Tutup Profil Lengkap';
+        btnToggle.style.backgroundColor = '#d9534f'; 
+      } else {
+        detailSection.classList.add('d-none');
+        btnToggle.textContent = 'Lihat Profil Lengkap';
+        btnToggle.style.backgroundColor = 'tomato';
+      }
+    });
+  </script>
+
+</body>
+</html>
