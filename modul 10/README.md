@@ -104,9 +104,9 @@ header('Content-Type: application/json');
 
 // Data sederhana (simulasi database)
 $data = [
-    ['nama' => 'Arvan', 'pekerjaan' => 'Web Developer', 'lokasi' => 'Tegal'],
-    ['nama' => 'Aji', 'pekerjaan' => 'Data Scientist', 'lokasi' => 'Baseh'],
-    ['nama' => 'Arnanda', 'pekerjaan' => 'Mobile Developer', 'lokasi' => 'Cilacap']
+    ['nama' => 'Arnanda', 'pekerjaan' => 'AI Engineer', 'lokasi' => 'Purwokerto'],
+    ['nama' => 'Zidane', 'pekerjaan' => 'Anggota DPR Komisi IV', 'lokasi' => 'Cilacap'],
+    ['nama' => 'Andika', 'pekerjaan' => 'Ketua Umum Partai', 'lokasi' => 'Kroya']
 ];
 
 // Ubah array menjadi JSON dan tampilkan
