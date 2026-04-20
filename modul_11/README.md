@@ -116,23 +116,23 @@ Berikut adalah dokumentasi hasil *running* dari proyek integrasi Laravel dan AJA
 ### 1. Tampilan Awal (Sebelum Interaksi)
 *Deskripsi: Menampilkan antarmuka kosong dengan tombol "Tampilkan Data".*
 <p align="center">
-  <img src="[URL_GAMBAR_TAMPILAN_AWAL_DISINI]" width="800" alt="Tampilan Awal">
+  <img src="tampilanawal.png" width="800" alt="Tampilan Awal">
 </p>
 
 ### 2. Tampilan Saat Proses Loading (Opsional/Jika Ada Animasi)
 *Deskripsi: Menampilkan perubahan pada tombol menjadi "Mengambil Data..." saat AJAX melakukan request.*
 <p align="center">
-  <img src="[URL_GAMBAR_TAMPILAN_LOADING_DISINI]" width="800" alt="Tampilan Loading">
+  <img src="ambildata.png" width="800" alt="Tampilan Loading">
 </p>
 
 ### 3. Tampilan Hasil Penarikan Data AJAX
 *Deskripsi: Data 3 mahasiswa berhasil di-render dalam bentuk Card Grid secara dinamis tanpa melakukan *reload* halaman.*
 <p align="center">
-  <img src="[URL_GAMBAR_TAMPILAN_HASIL_DATA_DISINI]" width="800" alt="Tampilan Hasil Data">
+  <img src="tampilandata.png" width="800" alt="Tampilan Hasil Data">
 </p>
 
 ### 4. Tampilan Penanganan Error (Jika File JSON Dihapus/Gagal)
 *Deskripsi: Pesan error informatif muncul pada antarmuka jika AJAX gagal menghubungi server atau data JSON tidak ditemukan.*
 <p align="center">
-  <img src="[URL_GAMBAR_TAMPILAN_ERROR_DISINI]" width="800" alt="Tampilan Error">
+  <img src="gagalloaddata.png" width="800" alt="Tampilan Error">
 </p>
