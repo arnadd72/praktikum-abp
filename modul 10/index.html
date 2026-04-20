@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tugas Modul 10 - Ajax</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --blue-deep: #091369;
+        --blue-mid: #1079f0;
+        --blue-light: #f1fff7;
+        --blue-border: #10e8f0;
+        --blue-stat: #f8f9fa;
+        --text-dark: #333;
+        --text-muted: #666;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background-color: var(--blue-border);
+        margin: 0;
+        padding: 20px;
+        color: var(--text-dark);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        max-width: 560px;
+        width: 100%;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, var(--blue-deep), var(--blue-mid));
+        color: white;
+        padding: 22px;
+        text-align: center;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-family: "DM Sans", sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+      }
+
+      .header p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        opacity: 0.75;
+      }
+
+      .content {
+        padding: 25px;
+      }
+
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, var(--blue-deep), var(--blue-mid));
+        color: #fff;
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition:
+          opacity 0.2s,
+          transform 0.15s;
+        box-shadow: 0 2px 8px rgba(0, 86, 179, 0.2);
+        position: relative;
+      }
+
+      .btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn.loading {
+        pointer-events: none;
+        opacity: 0.65;
+      }
+
+      .btn .btn-text {
+        transition: opacity 0.15s;
+      }
+
+      .btn.loading .btn-text {
+        opacity: 0;
+      }
+
+      .btn .spinner {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 2.5px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .btn.loading .spinner {
+        display: block;
+      }
+
+      @keyframes spin {
+        to {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+
+      #hasil-profil {
+        margin-top: 20px;
+      }
+
+      .placeholder {
+        color: #aaa;
+        font-size: 13px;
+        font-style: italic;
+        text-align: center;
+        padding: 16px 0;
+      }
+
+      .profil-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border-bottom: 1px solid #eee;
+        padding: 16px 10px;
+        opacity: 0;
+        transform: translateY(8px);
+        animation: fadeUp 0.35s ease-out forwards;
+        transition: background 0.15s;
+      }
+
+      .profil-item:last-child {
+        border-bottom: none;
+      }
+
+      .profil-item:nth-child(1) {
+        animation-delay: 0.05s;
+      }
+
+      .profil-item:nth-child(2) {
+        animation-delay: 0.12s;
+      }
+
+      .profil-item:nth-child(3) {
+        animation-delay: 0.19s;
+      }
+
+      .profil-item:hover {
+        background-color: var(--blue-light);
+      }
+
+      @keyframes fadeUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 5px;
+        background: linear-gradient(135deg, var(--blue-deep), var(--blue-mid));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .avatar svg {
+        width: 22px;
+        height: 22px;
+        color: #fff;
+      }
+
+      .profil-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .profil-nama {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--text-dark);
+        margin-bottom: 4px;
+      }
+
+      .profil-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .meta-item svg {
+        width: 13px;
+        height: 13px;
+        color: var(--blue-deep);
+        flex-shrink: 0;
+        opacity: 0.6;
+      }
+
+      .error-msg {
+        color: #721c24;
+        font-size: 13px;
+        line-height: 1.6;
+        padding: 14px 16px;
+        border-radius: 5px;
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 12px;
+        }
+
+        .content {
+          padding: 18px;
+        }
+
+        .header {
+          padding: 18px;
+        }
+
+        .header h1 {
+          font-size: 18px;
+        }
+
+        .profil-meta {
+          gap: 10px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
+      <symbol
+        id="icon-user"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </symbol>
+      <symbol
+        id="icon-briefcase"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </symbol>
+      <symbol
+        id="icon-map-pin"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </symbol>
+    </svg>
+
+    <div class="container">
+      <div class="header">
+        <h1>Tugas Modul 10</h1>
+        <p>Pengambilan data dari server dengan AJAX</p>
+      </div>
+
+      <div class="content">
+        <button class="btn" id="btnTampilkan" type="button">
+          <span class="btn-text">Tampilkan Profil</span>
+          <span class="spinner"></span>
+        </button>
+
+        <div id="hasil-profil">
+          <p class="placeholder">Belum ada data. Klik tombol di atas.</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const btn = document.getElementById("btnTampilkan");
+      const hasil = document.getElementById("hasil-profil");
+
+      btn.addEventListener("click", async function () {
+        this.classList.add("loading");
+
+        try {
+          const response = await fetch("data.php");
+
+          if (!response.ok) {
+            throw new Error("Server error: " + response.status);
+          }
+
+          const data = await response.json();
+          hasil.innerHTML = "";
+
+          data.forEach((item) => {
+            const div = document.createElement("div");
+            div.className = "profil-item";
+
+            div.innerHTML = `
+                        <div class="avatar">
+                            <svg><use href="#icon-user"/></svg>
+                        </div>
+                        <div class="profil-info">
+                            <div class="profil-nama">${item.nama}</div>
+                            <div class="profil-meta">
+                                <span class="meta-item">
+                                    <svg><use href="#icon-briefcase"/></svg>
+                                    ${item.pekerjaan}
+                                </span>
+                                <span class="meta-item">
+                                    <svg><use href="#icon-map-pin"/></svg>
+                                    ${item.lokasi}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+
+            hasil.appendChild(div);
+          });
+        } catch (error) {
+          hasil.innerHTML = `
+                    <div class="error-msg">
+                        Gagal mengambil data. Pastikan file data.php ada di folder yang sama
+                        dan halaman dibuka melalui server lokal (XAMPP / php -S).
+                    </div>
+                `;
+        } finally {
+          this.classList.remove("loading");
+        }
+      });
+    </script>
+  </body>
+</html>
