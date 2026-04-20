@@ -298,13 +298,13 @@ Antarmuka dibangun menggunakan Laravel Blade dengan JavaScript Fetch API. Implem
 
 Berikut adalah dokumentasi hasil *running* dari proyek integrasi Laravel dan AJAX.
 
-### 1. Tampilan Awal (Sebelum Interaksi)
+### 1. Tampilan Awal
 *Deskripsi: Menampilkan antarmuka kosong dengan tombol "Tampilkan Data".*
 <p align="center">
   <img src="tampilanawal.png" width="800" alt="Tampilan Awal">
 </p>
 
-### 2. Tampilan Saat Proses Loading (Opsional/Jika Ada Animasi)
+### 2. Tampilan Saat Proses Loading
 *Deskripsi: Menampilkan perubahan pada tombol menjadi "Mengambil Data..." saat AJAX melakukan request.*
 <p align="center">
   <img src="ambildata.png" width="800" alt="Tampilan Loading">
