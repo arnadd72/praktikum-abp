@@ -86,7 +86,6 @@ Aplikasi menggunakan tabel `products` dengan atribut relasional `name` (string) 
 
 ## 3. Source Code Praktikum
 
-> **Catatan Engineer:** Seluruh kode di bawah disusun dengan standar level industri, memperhatikan batasan lebar layar (*line breaks*), validasi presisi tinggi, penerapan standar operasional error (*Try-Catch*), dan proteksi celah eksploitasi.
 
 ### 3.1 Konfigurasi *Environment* (`.env`)
 Modifikasi pada bagian koneksi ke MySQL/MariaDB:
@@ -100,3 +99,371 @@ DB_USERNAME=root
 DB_PASSWORD=
 DB_CHARSET=utf8mb4
 DB_COLLATION=utf8mb4_unicode_ci
+```
+### 3.2 File Migration (database/migrations/..._create_products_table.php)
+Mendefinisikan skema secara aman.
+
+```PHP
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // Pendefinisian skema dengan tipe data presisi 
+        // untuk mencegah anomali data
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            
+            // Limitasi panjang karakter string (VARCHAR)
+            $table->string('name', 150);
+            
+            // Integer default unsigned jika tidak ada harga negatif
+            $table->unsignedInteger('price');
+            
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('products');
+    }
+};
+```
+### 3.3 Model Eloquent (app/Models/Product.php)
+Penentuan perlindungan Mass Assignment.
+
+```PHP
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Product extends Model
+{
+    use HasFactory;
+
+    /**
+     * Menerapkan filter keamanan tingkat tinggi.
+     * Hanya field di bawah ini yang dapat dimanipulasi
+     * melalui metode Model::create() atau update().
+     * Mencegah injeksi manipulasi field secara tidak sah.
+     */
+    protected $fillable = [
+        'name', 
+        'price'
+    ];
+}
+```
+### 3.4 Controller (app/Http/Controllers/ProductController.php)
+Diimplementasikan pembatasan validasi ketat, pengelolaan respons, dan penulisan baris yang ramah baca pada layar kecil.
+
+```PHP
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class ProductController extends Controller
+{
+    public function index()
+    {
+        // Mengambil keseluruhan data dari database secara aman
+        $products = Product::all();
+        
+        return view('products.index', [
+            'products' => $products
+        ]);
+    }
+
+    public function create()
+    {
+        return view('products.form', [
+            'title'   => 'Tambah',
+            'product' => new Product(),
+            'route'   => route('products.store'),
+            'method'  => 'POST',
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        // Proteksi Lapis Pertama: Filter validasi input ekstensif
+        $validated = $request->validate([
+            'name'  => 'required|string|min:4|max:100',
+            'price' => 'required|integer|min:1000000',
+        ]);
+
+        try {
+            // Proteksi Lapis Kedua: Mass-assignment berbasis fillable
+            Product::create($validated);
+
+            return redirect()
+                ->route('products.index')
+                ->with('success', 'Produk berhasil ditambahkan.');
+                
+        } catch (\Exception $e) {
+            // Log ke sistem, jangan melempar SQL trace ke sisi client
+            Log::error('Product creation failed: ' . $e->getMessage());
+            
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kegagalan sistem penyimpanan.');
+        }
+    }
+
+    public function edit(Product $product)
+    {
+        // Data binding Eloquent akan otomatis mencari objek
+        // berdasarkan parameter ID pada URI.
+        return view('products.form', [
+            'title'   => 'Edit',
+            'product' => $product,
+            'route'   => route('products.update', $product),
+            'method'  => 'PUT',
+        ]);
+    }
+
+    public function update(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'name'  => 'required|string|min:4|max:100',
+            'price' => 'required|integer|min:1000000',
+        ]);
+
+        try {
+            $product->update($validated);
+
+            return redirect()
+                ->route('products.index')
+                ->with('success', 'Produk berhasil diperbarui.');
+                
+        } catch (\Exception $e) {
+            Log::error('Product update failed: ' . $e->getMessage());
+            
+            return back()
+                ->withInput()
+                ->with('error', 'Pembaruan data produk gagal.');
+        }
+    }
+
+    public function destroy(Product $product)
+    {
+        try {
+            $product->delete();
+
+            return redirect()
+                ->route('products.index')
+                ->with('success', 'Produk berhasil dihapus permanen.');
+                
+        } catch (\Exception $e) {
+            Log::error('Product deletion failed: ' . $e->getMessage());
+            
+            return redirect()
+                ->route('products.index')
+                ->with('error', 'Data tidak dapat dihapus.');
+        }
+    }
+}
+```
+### 3.5 Layout Template Induk (resources/views/template.blade.php)
+```HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title')</title>
+    <link 
+        href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css)" 
+        rel="stylesheet"
+    >
+</head>
+<body class="bg-light" style="width: 95%; margin: 0 auto;">
+
+    @yield('content')
+
+    <script 
+        src="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js)">
+    </script>
+</body>
+</html>
+```
+### 3.6 Tampilan Daftar Produk (resources/views/products/index.blade.php)
+```HTML
+@extends('template')
+
+@section('title', 'Daftar Produk')
+
+@section('content')
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            
+            @if (session('success'))
+                <div class="alert alert-success shadow-sm">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="m-0 text-secondary">Manajemen Produk</h4>
+                <a 
+                    href="{{ route('products.create') }}" 
+                    class="btn btn-primary shadow-sm"
+                >
+                    + Tambah Data
+                </a>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <table class="table table-hover table-striped m-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nama Produk</th>
+                            <th>Harga (Rp)</th>
+                            <th class="text-center">Aksi Manajemen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($products as $product)
+                        <tr>
+                            <td class="align-middle">{{ $product->name }}</td>
+                            <td class="align-middle">{{ $product->price }}</td>
+                            <td class="text-center">
+                                <a 
+                                    href="{{ route('products.edit', $product->id) }}" 
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Ubah
+                                </a>
+                                
+                                <form 
+                                    method="POST" 
+                                    action="{{ route('products.destroy', $product->id) }}" 
+                                    style="display: inline;" 
+                                    onsubmit="return confirm('Hapus permanen produk ini?')"
+                                >
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-danger">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+@endsection
+```
+### 3.7 Tampilan Form Terpadu (resources/views/products/form.blade.php)
+```HTML
+@extends('template')
+
+@section('title', 'Form ' . $title . ' Produk')
+
+@section('content')
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="m-0">Form {{ $title }} Produk Utama</h5>
+                </div>
+                <div class="card-body">
+                    
+                    <form method="POST" action="{{ $route }}">
+                        @csrf
+                        
+                        @if ($method === 'PUT')
+                            @method('PUT')
+                        @endif
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-bold">
+                                Nama Produk
+                            </label>
+                            <input 
+                                type="text" 
+                                name="name" 
+                                id="name" 
+                                class="form-control @error('name') is-invalid @enderror" 
+                                value="{{ old('name', $product->name) }}"
+                                autocomplete="off"
+                            >
+                            @error('name')
+                                <div class="invalid-feedback fw-semibold">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="price" class="form-label fw-bold">
+                                Harga Kompetitif (Rupiah)
+                            </label>
+                            <input 
+                                type="number" 
+                                name="price" 
+                                id="price" 
+                                class="form-control @error('price') is-invalid @enderror" 
+                                value="{{ old('price', $product->price) }}"
+                            >
+                            @error('price')
+                                <div class="invalid-feedback fw-semibold">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success fw-bold">
+                                {{ $title == 'Tambah' ? 'Simpan Baru' : 'Perbarui Data' }}
+                            </button>
+                            <a 
+                                href="{{ route('products.index') }}" 
+                                class="btn btn-outline-secondary"
+                            >
+                                Kembali
+                            </a>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+```
+
+HASIL TAMPILAN WEB (OUTPUT)
+Berikut adalah dokumentasi tangkapan layar (screenshot) implementasi operasi keamanan lapis database dan manipulasi UI menggunakan fungsionalitas CRUD di framework Laravel:
+
+1. Tampilan Halaman View (Awal)
+Deskripsi: Menampilkan struktur tabel produk utama dengan status direktori kosong sebelum diisi data. Rute URI: http://localhost:8000/products.
+
+2. Tampilan Halaman Form Tambah Produk
+Deskripsi: Antarmuka terproteksi CSRF untuk memasukkan entitas data "Laptop" beserta limitasi harganya. Terdapat indikator peringatan divalidasi langsung oleh Controller. Rute URI: http://localhost:8000/products/create.
+
+3. Tampilan Halaman View Setelah Tambah Data
+Deskripsi: Visualisasi tabel merender balikan data baru ke antarmuka dengan injeksi notifikasi session flash data "berhasil ditambahkan". Rute URI: http://localhost:8000/products.
+
+4. Tampilan Halaman Form Edit Produk
+Deskripsi: Form dengan repopulasi data Eloquent secara otomatis. Parameter method spoofing PUT diaktifkan agar integrasi pembaruan dikenali oleh Laravel Routing. Rute URI: http://localhost:8000/products/[id]/edit.
