@@ -118,3 +118,235 @@ Route::get('/logout', function () {
 
 // Rute CRUD Product diproteksi penuh oleh Middleware Auth
 Route::resource('product', ProductController::class)->middleware('auth');
+```
+### 3.2 Lapisan Pengendali Keamanan (app/Http/Controllers/SiteController.php)
+Memvalidasi masukan form login dengan standar eksekusi sistem bawaan (Auth Attempt).
+
+```PHP
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
+class SiteController extends Controller
+{
+    public function auth(Request $request)
+    {
+        // Limitasi input awal agar request tidak membebani memori
+        $credentials = $request->validate([
+            'email'    => 'required|email|max:150',
+            'password' => 'required|string|min:6',
+        ]);
+
+        try {
+            // Auth::attempt melakukan pencocokan hash Bcrypt di latar belakang
+            if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+                
+                $request->session()->regenerate();
+                
+                // Menyimpan nama user ke session statis sebagai fallback/display
+                session()->put('name', Auth::user()->name);
+                
+                return redirect()->intended('/product');
+            }
+
+            // Fallback apabila kredensial salah (tidak spesifik memberitahu mana yang salah)
+            return redirect('/login')
+                ->with('msg', 'Otentikasi gagal: Email atau Password tidak valid.');
+                
+        } catch (\Exception $e) {
+            Log::error('Kesalahan Otentikasi Lintas Sistem: ' . $e->getMessage());
+            return redirect('/login')->with('msg', 'Terjadi kesalahan internal server.');
+        }
+    }
+}
+```
+### 3.3 Skema Migrasi Relasional (database/migrations/..._create_variants_table.php)
+Membuat tabel detail produk yang dikunci secara struktural ke tabel induk.
+
+```PHP
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('variants', function (Blueprint $table) {
+            $table->id();
+            
+            // Atribut Variabel
+            $table->string('name', 100);
+            $table->text('description')->nullable();
+            $table->string('processor', 100);
+            $table->string('memory', 50);
+            $table->string('storage', 50);
+            
+            // Relasi Foreign Key dengan referensi tabel `products`
+            // onDelete('cascade') opsional: jika produk dihapus, variannya terhapus otomatis
+            $table->foreignId('product_id')
+                  ->constrained('products')
+                  ->onDelete('cascade');
+                  
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('variants');
+    }
+};
+```
+### 3.4 Representasi Model Relasional ORM
+Model Product.php (Posisi Induk):
+
+```PHP
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Product extends Model
+{
+    use HasFactory;
+    
+    protected $fillable = ['name', 'price'];
+
+    // Menandakan 1 Produk berhak memiliki banyak Varian
+    public function variants()
+    {
+        return $this->hasMany(Variant::class);
+    }
+}
+```
+Model Variant.php (Posisi Anak):
+
+```PHP
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Variant extends Model
+{
+    use HasFactory;
+    
+    // Melindungi Mass-Assignment
+    protected $fillable = [
+        'name', 'description', 'processor', 
+        'memory', 'storage', 'product_id'
+    ];
+
+    // Menandakan spesifikasi Varian ini merupakan milik 1 Produk mutlak
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+}
+```
+### 3.5 Pembaruan Layout Template Induk (resources/views/template.blade.php)
+Menggunakan directive Blade @auth untuk mendeteksi visibilitas menu berdasarkan sesi.
+
+```HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title')</title>
+    <link 
+        href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css)" 
+        rel="stylesheet"
+    >
+</head>
+<body class="bg-light" style="width: 95%; margin: 0 auto;">
+
+    @auth
+        <div class="row justify-content-end mt-4 mb-2">
+            <div class="col-md-4 text-end">
+                <span class="fw-bold me-3 text-secondary">
+                    Selamat datang, {{ Auth::user()->name }}
+                </span>
+                <a href="{{ route('logout') }}" class="btn btn-sm btn-danger shadow-sm">
+                    Logout Keamanan
+                </a>
+            </div>
+        </div>
+    @endauth
+
+    <div class="row justify-content-center mt-3">
+        @yield('content')
+    </div>
+
+    <script 
+        src="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js)">
+    </script>
+</body>
+</html>
+```
+### 3.6 Modifikasi Tampilan Tabel dengan Nested Data (resources/views/products/index.blade.php)
+Menarik data relasional secara dinamis dari Model ke layar antarmuka pengguna.
+
+```HTML
+<table class="table table-hover table-bordered m-0 bg-white">
+    <thead class="table-dark">
+        <tr>
+            <th>Nama Produk Utama</th>
+            <th>Harga (Rp)</th>
+            <th>Spesifikasi Varian Terkait</th>
+            <th class="text-center">Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($products as $d)
+        <tr>
+            <td class="align-middle fw-bold">{{ $d->name }}</td>
+            <td class="align-middle">{{ number_format($d->price, 0, ',', '.') }}</td>
+            
+            <td class="align-middle">
+                <ul class="mb-0 text-muted" style="font-size: 0.9em;">
+                    @foreach ($d->variants as $var)
+                        <li class="mb-2">
+                            <strong class="text-dark">{{ $var->name }}</strong><br>
+                            Processor: {{ $var->processor }} <br>
+                            RAM: {{ $var->memory }} | Storage: {{ $var->storage }} <br>
+                            <span class="fst-italic">{{ $var->description }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            </td>
+            
+            <td class="align-middle text-center">
+                </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+```
+
+HASIL TAMPILAN WEB (OUTPUT)
+Berikut adalah dokumentasi tangkapan layar (screenshot) implementasi operasi keamanan logikal dan pemanggilan kerangka data berelasi (Database Relational Mapping):
+
+1. Tampilan Halaman Login (Proteksi Awal)
+Deskripsi: Menampilkan form masuk yang wajib diisi. Apabila URL /product dipaksa diakses tanpa sesi, pengguna akan selalu terpantul ke halaman ini oleh Middleware.
+<img width="1330" height="602" alt="Screenshot 2026-04-25 142259" src="https://github.com/user-attachments/assets/1ddd46d0-ccfa-4f40-80bc-09fabfe28919" />
+
+
+2. Tampilan Header Auth di Layout Global
+Deskripsi: Visualisasi directive @auth yang berhasil mengidentifikasi nama user yang sedang login beserta ketersediaan tombol eksekusi "Logout Keamanan".
+<img width="606" height="160" alt="Screenshot 2026-04-25 142249" src="https://github.com/user-attachments/assets/80c1c6db-a1eb-4505-babc-fde25cdc37a9" />
+
+3. Tampilan Halaman Daftar Produk & Varian (One-to-Many Output)
+Deskripsi: Visualisasi dari arsitektur Object-Relational Mapping yang merender kumpulan atribut turunan variants langsung berdampingan dengan entitas induk products secara struktural.
+<img width="1836" height="770" alt="Screenshot 2026-04-25 142213" src="https://github.com/user-attachments/assets/5eea1a00-80e9-44b6-a1d8-a4c118fc9db5" />
