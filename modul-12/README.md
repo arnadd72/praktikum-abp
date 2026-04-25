@@ -459,6 +459,7 @@ Berikut adalah dokumentasi tangkapan layar (screenshot) implementasi operasi kea
 1. Tampilan Halaman View (Awal)
 Deskripsi: Menampilkan struktur tabel produk utama dengan status direktori kosong sebelum diisi data. Rute URI: http://localhost:8000/products.
 
+
 2. Tampilan Halaman Form Tambah Produk
 Deskripsi: Antarmuka terproteksi CSRF untuk memasukkan entitas data "Laptop" beserta limitasi harganya. Terdapat indikator peringatan divalidasi langsung oleh Controller. Rute URI: http://localhost:8000/products/create.
 
