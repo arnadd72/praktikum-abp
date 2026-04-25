@@ -459,7 +459,8 @@ Berikut adalah dokumentasi tangkapan layar (screenshot) implementasi operasi kea
 1. Tampilan Halaman View (Awal)
 Deskripsi: Menampilkan struktur tabel produk utama dengan status direktori kosong sebelum diisi data. Rute URI: http://localhost:8000/products.
 <p align="center">
-  <img src="viewawal.png" width="800" alt="Tampilan Hasil Data">
+  <img width="1421" height="565" alt="viewawal" src="https://github.com/user-attachments/assets/c4234e0b-0555-4d93-9cd1-43a511438d4d" />
+
 </p>
 
 2. Tampilan Halaman Form Tambah Produk
