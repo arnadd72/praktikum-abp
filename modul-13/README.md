@@ -350,3 +350,14 @@ Deskripsi: Visualisasi directive @auth yang berhasil mengidentifikasi nama user 
 3. Tampilan Halaman Daftar Produk & Varian (One-to-Many Output)
 Deskripsi: Visualisasi dari arsitektur Object-Relational Mapping yang merender kumpulan atribut turunan variants langsung berdampingan dengan entitas induk products secara struktural.
 <img width="1836" height="770" alt="Screenshot 2026-04-25 142213" src="https://github.com/user-attachments/assets/5eea1a00-80e9-44b6-a1d8-a4c118fc9db5" />
+
+
+# TUGAS PERTEMUAN 8
+1. jelaskan tentang git branch 
+ - apa itu git branch 
+- buatlah git branch dengan 2 akun berbeda dan hubungkan dengan project yang di buat di tugas 2 ( bisa dengan antar teman kelas 
+- kalian jelaskan apa saja fungsi nya dan apa keuntungan git branch 
+- buat juga output dan input apa saja yang dapat kalian lakukan mengunakan git branch
+2. buatlah website ( bisa mengunakan website yang di gunnakan dalam tubes ) , lalu tambahkan database yang terhubung dengan local house 
+## JAWAB
+1. 
