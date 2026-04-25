@@ -22,7 +22,7 @@
   <h3>Disusun Oleh :</h3>
 
   <p>
-    <strong>Yasvin Syahgana</strong><br>
+    <strong>Arnanda setya nosa putra</strong><br>
     <strong>2311102180</strong><br>
     <strong>S1 IF-11-04</strong>
   </p>
