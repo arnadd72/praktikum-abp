@@ -458,13 +458,25 @@ Berikut adalah dokumentasi tangkapan layar (screenshot) implementasi operasi kea
 
 1. Tampilan Halaman View (Awal)
 Deskripsi: Menampilkan struktur tabel produk utama dengan status direktori kosong sebelum diisi data. Rute URI: http://localhost:8000/products.
-
+<p align="center">
+  <img src="viewawal.png" width="800" alt="Tampilan Hasil Data">
+</p>
 
 2. Tampilan Halaman Form Tambah Produk
 Deskripsi: Antarmuka terproteksi CSRF untuk memasukkan entitas data "Laptop" beserta limitasi harganya. Terdapat indikator peringatan divalidasi langsung oleh Controller. Rute URI: http://localhost:8000/products/create.
+<p align="center">
+  <img src="tambahproduk.png" width="800" alt="Tampilan Hasil Data">
+</p>
 
 3. Tampilan Halaman View Setelah Tambah Data
 Deskripsi: Visualisasi tabel merender balikan data baru ke antarmuka dengan injeksi notifikasi session flash data "berhasil ditambahkan". Rute URI: http://localhost:8000/products.
+<p align="center">
+  <img src="viewproduk.png" width="800" alt="Tampilan Hasil Data">
+</p>
 
 4. Tampilan Halaman Form Edit Produk
 Deskripsi: Form dengan repopulasi data Eloquent secara otomatis. Parameter method spoofing PUT diaktifkan agar integrasi pembaruan dikenali oleh Laravel Routing. Rute URI: http://localhost:8000/products/[id]/edit.
+<p align="center">
+  <img src="editproduk.png" width="800" alt="Tampilan Hasil Data">
+</p>
+
