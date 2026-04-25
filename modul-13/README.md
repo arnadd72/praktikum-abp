@@ -377,3 +377,242 @@ Deskripsi: Visualisasi dari arsitektur Object-Relational Mapping yang merender k
     Mudah Berpindah Konteks: Kamu bisa lompat dari mengerjakan "Fitur A" ke "Perbaikan Bug B" hanya dengan berganti branch, tanpa perlu membuat folder project baru di laptop.
   - 
 ### 2. Website
+# 🔥 Sistem Manajemen Inventaris Gudang Sembako (Tugas 8)
+
+Proyek ini dibangun menggunakan **Laravel 11** dan ditujukan untuk mengimplementasikan manajemen basis data relasional (MySQL) dengan skema autentikasi komprehensif dari bawaan **Laravel Breeze**. 
+
+Aplikasi ini dikhususkan untuk toko retail/gudang dan telah di-desain menggunakan **Tailwind CSS** untuk menawarkan *User Experience* (UX) premium melalui desain *Glassmorphism*, palet gradien profesional, dan visualisasi *Dashboard* interaktif.
+
+## 🚀 Fitur Unggulan
+1. **Keamanan Ekstra (Laravel Breeze):** Sistem pendataan terkunci sepenuhnya; orang tak dikenal tidak dapat mengintip stok barang jika tidak melakukan otentikasi login terlebih dahulu.
+2. **Dashboard HUD (Heads-up Display):** Menampilkan rekapitulasi Total Produk, Kalkulasi Nilai Estimasi Aset Rupiah, dan Batas Stok Minimum.
+3. **Peringatan Kondisi Stok Menipis:** Jika unit sembako berada di bawah batas tertentu (<10 barang), indikator merah berkedip peringatan krisis langsung menyala.
+4. **Antarmuka Kosmetik Premium:** Desain khusus dengan manipulasi grid asimetris Tailwind, *backdrop-blur*, kompilasi kelas terenkapsulasi oleh Vite, hingga manipulasi kartu barang animasi.
+
+---
+
+## 💻 Source Code Inti Sistem
+*Berikut adalah representasi kode esensial (MVC) yang digunakan di dalam `modul-13/tugas-8`.*
+
+### 1. File Konfigurasi Lintas Server (`.env`)
+Diatur pada modul ini agar merujuk ke layanan **MySQL Laragon** dengan basis data `sembako_db`.
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=sembako_db
+DB_USERNAME=root
+DB_PASSWORD=cilacap
+```
+### 2. Algoritme Pengendali Rute (routes/web.php)
+Mengarahkan tamu aplikasi langsung ke landing page, sementara kontrol manajemen dilindungi berlapis oleh alias validasi auth.
+
+```php
+<?php
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProductController;
+use Illuminate\Support\Facades\Route;
+Route::get('/', function () {
+    return view('welcome');
+});
+// Alias masuk dasbor dialihkan langsung otomatis ke Menu Sembako
+Route::get('/dashboard', function () {
+    return redirect()->route('product.index');
+})->middleware(['auth', 'verified'])->name('dashboard');
+// CRUD Products dikunci Auth Session
+Route::middleware('auth')->group(function () {
+    Route::resource('product', ProductController::class);
+    
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+require __DIR__.'/auth.php';
+```
+### 3. Migrasi DDL Database (database/migrations/..._create_products_table.php)
+Mendefinisikan skema kolom pendataan barang sembako langsung ke MariaDB/MySQL.
+
+```php
+<?php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('category');
+            $table->integer('price');
+            $table->integer('stock');
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
+    }
+    public function down(): void
+    {
+        Schema::dropIfExists('products');
+    }
+};
+```
+### 4. Pelindung Mass-Assignment (app/Models/Product.php)
+Entitas objek model yang bertanggung jawab memvalidasi field mana saja yang diizinkan mendapat perintah Create massal.
+
+```php
+<?php
+namespace App\Models;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+class Product extends Model
+{
+    use HasFactory;
+    protected $fillable = [
+        'name',
+        'category',
+        'price',
+        'stock',
+        'description'
+    ];
+}
+```
+### 5. Controller Logika Bisnis (app/Http/Controllers/ProductController.php)
+Menghubungkan Interface (Views) dengan basis data melalui penguraian input form yang kokoh (validated request).
+
+```php
+<?php
+namespace App\Http\Controllers;
+use App\Models\Product;
+use Illuminate\Http\Request;
+class ProductController extends Controller
+{
+    public function index()
+    {
+        $products = Product::latest()->get();
+        return view('product.index', compact('products'));
+    }
+    public function create()
+    {
+        return view('product.create');
+    }
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'category' => 'required',
+            'price' => 'required|numeric',
+            'stock' => 'required|numeric',
+            'description' => 'nullable',
+        ]);
+        Product::create($request->all());
+        return redirect()->route('product.index')->with('success', 'Pencatatan inventaris sembako berhasil diterapkan!');
+    }
+    public function edit(Product $product)
+    {
+        return view('product.edit', compact('product'));
+    }
+    public function update(Request $request, Product $product)
+    {
+        $request->validate([
+            'name' => 'required',
+            'category' => 'required',
+            'price' => 'required|numeric',
+            'stock' => 'required|numeric',
+            'description' => 'nullable',
+        ]);
+        $product->update($request->all());
+        return redirect()->route('product.index')->with('success', 'Data harga/stok berhasil diselaraskan dengan server.');
+    }
+    public function destroy(Product $product)
+    {
+        $product->delete();
+        return redirect()->route('product.index')->with('success', 'Barang terkait berhasil diturunkan dari etalase gudang.');
+    }
+}
+```
+### 6. Tampilan Tabel Dasbor Premium (resources/views/product/index.blade.php)
+Visualisasi terpadu perihal statistik gudang lengkap dengan badge list unik Tailwind CSS. (Karena terlalu panjang, ini adalah ringkasan inti visualnya)
+
+```html
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
+                📦 Manajemen Inventaris Sembako
+            </h2>
+            <a href="{{ route('product.create') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-green-500 rounded-xl text-white font-medium shadow-xl hover:scale-105">
+                Tambah Produk
+            </a>
+        </div>
+    </x-slot>
+    <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
+        
+        <!-- Summary Cards Layout -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl p-6 flex items-center gap-4">
+                <p>Total Produk: <strong>{{ count($products) }} Items</strong></p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 flex items-center gap-4">
+                <p>Estimasi Aset: <strong>Rp{{ number_format((float)($products->sum(function($p) { return $p->price * $p->stock; })), 0, ',', '.') }}</strong></p>
+            </div>
+        </div>
+        <!-- Tabel Render Area -->
+        <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-gray-100">
+            <table class="min-w-full divide-y divide-gray-100">
+                <thead class="bg-gray-50/50">
+                    <tr>
+                        <th>NAMA BARANG</th>
+                        <th>KATEGORI</th>
+                        <th>HARGA</th>
+                        <th>STOK</th>
+                        <th>AKSI</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-50">
+                    @forelse ($products as $p)
+                        <tr class="hover:bg-emerald-50/30">
+                            <td>{{ $p->name }} <br> <small>{{ $p->description }}</small></td>
+                            <td><span class="badge {{ $p->category }}">{{ $p->category }}</span></td>
+                            <td>Rp {{ number_format($p->price, 0, ',', '.') }}</td>
+                            <td>
+                                <span class="{{ $p->stock < 10 ? 'text-red-500' : 'text-emerald-600' }}">{{ $p->stock }}</span>
+                                @if($p->stock < 10) <small class="text-red-500 animate-pulse">Limit</small> @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('product.edit', $p->id) }}">Edit</a>
+                                <form action="{{ route('product.destroy', $p->id) }}" method="POST">
+                                    @csrf @method('DELETE')
+                                    <button type="submit">Hapus</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="text-center">Inventaris Sembako Kosong.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</x-app-layout>
+```
+
+## OUTPUT WEBSITE (SS)
+### 1. landing page
+<img width="1787" height="950" alt="Screenshot 2026-04-25 150524" src="https://github.com/user-attachments/assets/e3df95bb-8660-4b70-95ff-8f0abb327bb6" />
+
+### 2. Register
+<img width="1290" height="952" alt="Screenshot 2026-04-25 150551" src="https://github.com/user-attachments/assets/c2e39fbb-9f27-4337-8d19-a540bc55fb87" />
+
+### 3. Login
+<img width="1304" height="847" alt="Screenshot 2026-04-25 150540" src="https://github.com/user-attachments/assets/a3e77e5c-27b3-4452-b093-40b90ea39e46" />
+
+### 4. Dashboard admin
+<img width="1426" height="962" alt="Screenshot 2026-04-25 150928" src="https://github.com/user-attachments/assets/d72102e5-bffe-4e89-82e2-f3fc829c587a" />
+
+### 5. Tambah Data
+<img width="1534" height="973" alt="Screenshot 2026-04-25 150627" src="https://github.com/user-attachments/assets/9f8c1938-c906-43d0-8415-e085da4d85e3" />
+
+### 6. Edit Data
+<img width="1300" height="970" alt="Screenshot 2026-04-25 150942" src="https://github.com/user-attachments/assets/653dc574-71e1-4dc2-b5b8-bf5fc05c4bbb" />
