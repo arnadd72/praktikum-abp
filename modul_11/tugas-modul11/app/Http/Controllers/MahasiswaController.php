@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class MahasiswaController extends Controller
 {
-    // Menampilkan halaman utama
+    // Menampilkan halaman utama arvan
     public function index()
     {
         return view('mahasiswa');
