@@ -363,7 +363,10 @@ Deskripsi: Visualisasi dari arsitektur Object-Relational Mapping yang merender k
 ### 1. git branch
 
   - Git branch adalah fitur dalam Git yang berfungsi menciptakan ruang kerja terpisah (cabang) dari repositori utama (main/master). Ini memungkinkan pengembang bereksperimen, memperbaiki     bug, atau menambahkan fitur baru tanpa memengaruhi kode utama yang stabil. Branch bertindak sebagai pointer ringan yang bergerak otomatis setiap ada commit.
-  - 
+
+    ### MEMBUAT GIT BRANCH DENGAN 2 AKUN BERBEDA
+  <img width="589" height="349" alt="Screenshot 2026-04-27 005946" src="https://github.com/user-attachments/assets/acacfba8-6521-4e6d-9ca0-61025ef824ca" />
+
   - Fungsi dan Keuntungan Git Branch
     - Fungsi Utama:
   Isolasi Kode: Memisahkan pekerjaan yang sedang berjalan dari kode utama yang sudah stabil (production-ready).
@@ -375,7 +378,23 @@ Deskripsi: Visualisasi dari arsitektur Object-Relational Mapping yang merender k
     Pengembangan Paralel: Kamu dan temanmu bisa bekerja di detik yang sama, mengedit file yang sama, tanpa harus saling tunggu.
     Code Review Lebih Rapi: Memudahkan proses pengecekan kode sebelum digabungkan (biasanya melalui proses Pull Request / Merge Request).
     Mudah Berpindah Konteks: Kamu bisa lompat dari mengerjakan "Fitur A" ke "Perbaikan Bug B" hanya dengan berganti branch, tanpa perlu membuat folder project baru di laptop.
-  - 
+    
+  - ### 1. Input (Perintah & Argumen)
+Input merujuk pada variasi perintah yang dimasukkan melalui terminal untuk mengelola percabangan:
+| Perintah | Deskripsi |
+| :--- | :--- |
+| `git branch <nama_branch>` | Membuat branch baru sebagai jalur pengembangan terpisah. |
+| `git branch` | Menampilkan daftar semua branch yang ada di lokal. |
+| `git branch -d <nama_branch>` | Menghapus branch yang sudah tidak digunakan (setelah di-merge). |
+| `git branch -m <nama_baru>` | Mengubah nama branch yang sedang aktif. |
+| `git branch -a` | Melihat semua branch, termasuk yang ada di server remote (GitHub). |
+| `git branch -v` | Menampilkan daftar branch beserta detail commit terakhirnya. |
+### 2. Output (Hasil Pengoperasian)
+Output adalah hasil atau informasi yang ditampilkan oleh Git setelah perintah dijalankan:
+*   **Daftar Nama Branch**: Menampilkan teks daftar branch, di mana branch yang aktif ditandai dengan tanda bintang (`*`) dan warna hijau.
+*   **Pemisahan Kode (Isolasi)**: Secara fungsional, kode di dalam folder project akan "terpisah". Perubahan di satu branch tidak akan memengaruhi branch lainnya sampai dilakukan proses merging.
+*   **Konfirmasi Status**: Pesan sistem yang memberikan informasi sukses (seperti *"Deleted branch..."*) atau pesan error (seperti *"branch not merged"*).
+*   **Visualisasi Sejarah (Graph)**: Jika digabung dengan perintah `git log --graph`, outputnya berupa bagan alur yang menunjukkan sejarah percabangan dan penggabungan kode.
 ### 2. Website
 # 🔥 Sistem Manajemen Inventaris Gudang Sembako (Tugas 8)
 
